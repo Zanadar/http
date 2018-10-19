@@ -173,9 +173,18 @@ impl HeaderValue {
     /// within the buffer.
     #[inline]
     pub unsafe fn from_shared_unchecked(src: Bytes) -> HeaderValue {
-        HeaderValue {
-            inner: src,
-            is_sensitive: false,
+        if cfg!(debug_assertions) {
+            match HeaderValue::from_shared(src.clone()) {
+                Ok(val) => val,
+                Err(_err) => {
+                    panic!("HeaderValue::from_shared_unchecked() with invalid bytes; bytes = {:?}", src);
+                },
+            }
+        } else {
+            HeaderValue {
+                inner: src,
+                is_sensitive: false,
+            }
         }
     }
 
